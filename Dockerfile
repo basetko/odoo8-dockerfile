@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER Victoria LV ltd. <vahe@vlv-pro.ru>
+MAINTAINER Victoria LV ltd. test <vahe@vlv-pro.ru>
 RUN set -x; \
 	apt-get update \
 	&& apt-get install -y \
