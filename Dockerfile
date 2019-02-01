@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER Victoria LV ltd. test <vahe@vlv-pro.ru>
+MAINTAINER Victoria LV ltd. <vahe@vlv-pro.ru>
 RUN set -x; \
 	apt-get update \
 	&& apt-get install -y \
@@ -23,12 +23,9 @@ RUN set -x; \
 #INstall WKHTMLTOPDF
 RUN curl -o wkhtmltox.deb -SL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb \
         && echo '7e35a63f9db14f93ec7feeb0fce76b30c08f2057 wkhtmltox.deb' | sha1sum -c - \
-        && dpkg --force-depends -i wkhtmltox.deb\
+        && dpkg --force-depends -i wkhtmltox.deb \
         && apt-get -y install -f --no-install-recommends
-# RUN set -x; \	apt-get update\
-#RUN set -x; \
-#    echo 'deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main' >  /etc/apt/sources.list.d/pgdg.list \
-#    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
 RUN apt-get install -y\
 	gcc \
 	python2.7-dev \
@@ -44,7 +41,6 @@ RUN apt-get install -y\
 	node-clean-css
 
 ### Install ODOO
-ENV ODOO_VERSION 8.0
 RUN adduser --system --quiet --shell=/bin/bash --home=/odoo --gecos 'ODOO' --group odoo
 RUN set -x; \
     mkdir /odoo/log \
@@ -54,19 +50,22 @@ RUN set -x; \
 	/odoo/oca_addons
 
 # Copy Odoo
-ENV ODOO_VERSION 8.0
-ENV ODOO_RELEASE 20171001
+ENV ODOO_VERSION 10.0
+ENV ODOO_RELEASE 20180816
 RUN set -x; \
     curl -o odoo.tar.gz http://nightly.odoo.com/${ODOO_VERSION}/nightly/src/odoo_${ODOO_VERSION}.${ODOO_RELEASE}.tar.gz \
+        #http://nightly.odoo.com/10.0/nightly/src/odoo_10.0.20180816.tar.gz
     && tar -xzf odoo.tar.gz \
-    && mv odoo-${ODOO_VERSION}-${ODOO_RELEASE} /odoo/odoo8 \
+    && mv odoo-${ODOO_VERSION}.post${ODOO_RELEASE} /odoo/odoo${ODOO_VERSION} \
     && rm odoo.tar.gz
 #COPY ./odoo /odoo/odoo8
-RUN pip install -r /odoo/odoo8/requirements.txt
+RUN pip install -r /odoo/odoo${ODOO_VERSION}/requirements.txt
 RUN rm -rf /var/lib/apt/lists/* wkhtmltox.deb \
 	&& apt-get remove -y gcc \
 	python-pip \
 	&& apt-get autoremove -y
+COPY ./odoo-bin /odoo/odoo${ODOO_VERSION}/
+RUN chmod +x /odoo/odoo${ODOO_VERSION}/odoo-bin
 RUN chown odoo:odoo -R /odoo
 USER odoo
-CMD ["/odoo/odoo8/openerp-server", "-c", "/odoo/odoo-config/odoo.conf"]
+CMD ["/odoo/odoo${ODOO_VERSION}/odoo-bin", "-c", "/odoo/odoo-config/odoo.conf"]
