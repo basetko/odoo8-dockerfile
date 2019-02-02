@@ -56,16 +56,21 @@ RUN set -x; \
     curl -o odoo.tar.gz http://nightly.odoo.com/${ODOO_VERSION}/nightly/src/odoo_${ODOO_VERSION}.${ODOO_RELEASE}.tar.gz \
         #http://nightly.odoo.com/10.0/nightly/src/odoo_10.0.20180816.tar.gz
     && tar -xzf odoo.tar.gz \
-    && mv odoo-${ODOO_VERSION}.post${ODOO_RELEASE} /odoo/odoo${ODOO_VERSION} \
+    && mv odoo-${ODOO_VERSION}.post${ODOO_RELEASE} /odoo/odoo10 \
     && rm odoo.tar.gz
-#COPY ./odoo /odoo/odoo8
-RUN pip install -r /odoo/odoo${ODOO_VERSION}/requirements.txt
-RUN rm -rf /var/lib/apt/lists/* wkhtmltox.deb \
-	&& apt-get remove -y gcc \
-	python-pip \
-	&& apt-get autoremove -y
-COPY ./odoo-bin /odoo/odoo${ODOO_VERSION}/
-RUN chmod +x /odoo/odoo${ODOO_VERSION}/odoo-bin
+
+RUN pip install -r /odoo/odoo10/requirements.txt
+#RUN rm -rf /var/lib/apt/lists/* wkhtmltox.deb \
+#	&& apt-get remove -y gcc \
+#	python-pip \
+#	&& apt-get autoremove -y
+COPY ./odoo-bin /odoo/odoo10/
+RUN chmod +x /odoo/odoo10/odoo-bin
 RUN chown odoo:odoo -R /odoo
+#RUN mkdir /etc/odoo
+#RUN mkdir /var/log/odoo
+#RUN chown odoo:odoo -R /etc/odoo
+#RUN chown odoo:odoo -R /var/log/odoo
+#COPY ./custom /odoo/custom
 USER odoo
-CMD ["/odoo/odoo${ODOO_VERSION}/odoo-bin", "-c", "/odoo/odoo-config/odoo.conf"]
+CMD ["/odoo/odoo10/odoo-bin", "-c", "/etc/odoo/odoo.conf"]
